@@ -1,0 +1,15 @@
+# Environment vairables
+.env
+*.env
+
+
+# Dependencies
+node_modules/
+
+# Bulid files
+dist/
+build/
+
+# Logs
+npm-debug.log*
+

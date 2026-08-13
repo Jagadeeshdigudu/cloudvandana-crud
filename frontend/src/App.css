@@ -1,0 +1,511 @@
+/* ======================================================
+   GLOBAL
+====================================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: linear-gradient(
+    135deg,
+    #eef2ff,
+    #f8fafc
+  );
+  color: #1e293b;
+}
+
+/* ======================================================
+   MAIN APP
+====================================================== */
+
+.app {
+  min-height: 100vh;
+  padding: 40px 25px;
+}
+
+.app h1 {
+  text-align: center;
+  font-size: 42px;
+  margin-bottom: 10px;
+  color: #334155;
+}
+
+.contacts-section {
+  width: 95%;
+  max-width: 1400px;
+  margin: 30px auto;
+  padding: 35px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow:
+    0 10px 35px rgba(0, 0, 0, 0.08);
+}
+
+.contacts-section h2 {
+  text-align: center;
+  font-size: 30px;
+  margin-bottom: 30px;
+  color: #475569;
+}
+
+.contacts-section h3 {
+  text-align: center;
+  font-size: 25px;
+  margin: 25px 0;
+  color: #475569;
+}
+
+/* ======================================================
+   LOGIN
+====================================================== */
+
+.login-section {
+  max-width: 500px;
+  margin: 100px auto;
+  padding: 45px;
+  text-align: center;
+  background: white;
+  border-radius: 20px;
+  box-shadow:
+    0 10px 35px rgba(0, 0, 0, 0.08);
+}
+
+.login-section h2 {
+  color: #475569;
+  margin-bottom: 15px;
+}
+
+.login-section p {
+  color: #64748b;
+  margin-bottom: 25px;
+}
+
+/* ======================================================
+   OBJECT SELECTOR
+====================================================== */
+
+.object-selector {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  font-size: 17px;
+}
+
+.object-selector select {
+  padding: 10px 15px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* ======================================================
+   FORM
+====================================================== */
+
+.record-form {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(190px, 1fr));
+
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.record-form input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #dbe2ea;
+  border-radius: 10px;
+  outline: none;
+  font-size: 15px;
+  background: #ffffff;
+}
+
+.record-form input:focus {
+  border-color: #6366f1;
+  box-shadow:
+    0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+/* ======================================================
+   BUTTONS
+====================================================== */
+
+button {
+  border: none;
+  border-radius: 9px;
+  padding: 12px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+/* Main button */
+
+.record-form > button[type="submit"],
+.login-section button {
+  background: linear-gradient(
+    135deg,
+    #4f46e5,
+    #6366f1
+  );
+
+  color: white;
+}
+
+.record-form > button[type="submit"]:hover,
+.login-section button:hover {
+  background: linear-gradient(
+    135deg,
+    #4338ca,
+    #4f46e5
+  );
+}
+
+/* Cancel */
+
+.cancel-btn {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+/* ======================================================
+   TABLE
+====================================================== */
+
+/*
+   IMPORTANT:
+   This wrapper prevents the table from squeezing
+   all columns into a tiny space.
+*/
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 25px;
+  border-radius: 14px;
+}
+
+/*
+   min-width prevents fields such as Title,
+   Description and Email from disappearing.
+*/
+
+.table-wrapper table {
+  width: 100%;
+  min-width: 1050px;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: white;
+}
+
+/* Header */
+
+.table-wrapper th {
+  background: linear-gradient(
+    135deg,
+    #334155,
+    #475569
+  );
+
+  color: white;
+  padding: 16px 14px;
+  text-align: center;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* First header corner */
+
+.table-wrapper th:first-child {
+  border-top-left-radius: 12px;
+}
+
+/* Last header corner */
+
+.table-wrapper th:last-child {
+  border-top-right-radius: 12px;
+}
+
+/* Body */
+
+.table-wrapper td {
+  padding: 15px 14px;
+  text-align: center;
+  border-bottom: 1px solid #e2e8f0;
+
+  /*
+    Keep long values readable.
+  */
+
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Hover */
+
+.table-wrapper tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* ======================================================
+   ACTION COLUMN
+====================================================== */
+
+.action-column {
+  width: 180px;
+  min-width: 180px;
+  position: sticky;
+  right: 0;
+}
+
+/*
+   Action cell stays visible while scrolling
+   horizontally.
+*/
+
+.table-wrapper td.action-column {
+  background: white;
+  z-index: 2;
+}
+
+.table-wrapper th.action-column {
+  z-index: 3;
+}
+
+/* ======================================================
+   ACTION BUTTONS
+====================================================== */
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.edit-btn {
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+.edit-btn:hover {
+  background: #e0e7ff;
+}
+
+.delete-btn {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.delete-btn:hover {
+  background: #fecaca;
+}
+
+/* ======================================================
+   MESSAGES
+====================================================== */
+
+.status-message {
+  text-align: center;
+  padding: 30px;
+  color: #64748b;
+  font-size: 17px;
+}
+
+.loading-more,
+.end-message {
+  text-align: center;
+  padding: 20px;
+  color: #64748b;
+}
+
+/* ======================================================
+   HR
+====================================================== */
+
+hr {
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  margin: 30px 0;
+}
+
+/* ======================================================
+   MOBILE
+====================================================== */
+
+@media (max-width: 768px) {
+
+  .app {
+    padding: 20px 10px;
+  }
+
+  .app h1 {
+    font-size: 30px;
+  }
+
+  .contacts-section {
+    width: 100%;
+    padding: 20px 15px;
+  }
+
+  .object-selector {
+    flex-direction: column;
+  }
+
+  .record-form {
+    grid-template-columns: 1fr;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+}
+/* ======================================================
+   VIEW BUTTON
+====================================================== */
+
+.view-btn {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.view-btn:hover {
+  background: #bae6fd;
+}
+
+
+/* ======================================================
+   VIEW MODAL
+====================================================== */
+
+.view-modal-overlay {
+  position: fixed;
+  inset: 0;
+
+  background: rgba(15, 23, 42, 0.55);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 9999;
+
+  padding: 20px;
+}
+
+
+.view-modal {
+  width: 100%;
+  max-width: 600px;
+
+  max-height: 85vh;
+
+  overflow-y: auto;
+
+  background: white;
+
+  border-radius: 18px;
+
+  padding: 30px;
+
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+
+.view-modal h2 {
+  margin-top: 0;
+
+  margin-bottom: 25px;
+
+  text-align: center;
+
+  color: #334155;
+}
+
+
+.view-details {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+
+.view-detail-row {
+  display: grid;
+
+  grid-template-columns:
+    180px 1fr;
+
+  gap: 15px;
+
+  padding: 12px 0;
+
+  border-bottom:
+    1px solid #e2e8f0;
+}
+
+
+.view-detail-row strong {
+  color: #475569;
+}
+
+
+.view-detail-row span {
+  color: #1e293b;
+
+  word-break: break-word;
+}
+
+
+.close-view-btn {
+  display: block;
+
+  margin: 25px auto 0;
+
+  background: #475569;
+
+  color: white;
+
+  padding: 11px 25px;
+}
+
+
+.close-view-btn:hover {
+  background: #334155;
+}
+
+
+/* ======================================================
+   ACTION BUTTONS
+====================================================== */
+
+.action-buttons {
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  gap: 7px;
+
+  flex-wrap: wrap;
+}
