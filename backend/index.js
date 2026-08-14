@@ -15,21 +15,13 @@ const PORT = process.env.PORT || 5000;
 // ======================================================
 
 const allowedOrigins = [
-    "https://cloudvandana-crud-frontend.onrender.com"
+    process.env.FRONTEND_URL
 ];
-
-// ======================================================
-// MIDDLEWARE
-// ======================================================
-
-app.set("trust proxy", 1);
 
 app.use(
     cors({
         origin: function (origin, callback) {
 
-            // Allow requests without an Origin
-            // such as Postman/server-to-server requests
             if (!origin) {
                 return callback(null, true);
             }
@@ -53,26 +45,23 @@ app.use(express.json());
 // SESSION
 // ======================================================
 
+app.set("trust proxy", 1);
+
 app.use(
     session({
-        secret:
-            process.env.SESSION_SECRET ||
-            "development-only-change-this-secret",
+        secret: process.env.SESSION_SECRET,
 
         resave: false,
 
         saveUninitialized: false,
 
+        proxy: true,
+
         cookie: {
             httpOnly: true,
-
-            secure:
-                process.env.NODE_ENV === "production",
-
-            sameSite: "lax",
-
-            maxAge:
-                24 * 60 * 60 * 1000
+            secure: true,
+            sameSite: "none",
+            maxAge: 24 * 60 * 60 * 1000
         }
     })
 );
@@ -262,22 +251,18 @@ app.get("/auth/login", (req, res) => {
         // ----------------------------------------------
 
         const authUrl =
-            `${process.env.SF_LOGIN_URL}/services/oauth2/authorize` +
-            `?response_type=code` +
-            `&prompt=login` +
-            `&client_id=${encodeURIComponent(
-                process.env.SF_CLIENT_ID
-            )}` +
-            `&redirect_uri=${encodeURIComponent(
-                process.env.SF_CALLBACK_URL
-            )}` +
-            `&state=${encodeURIComponent(
-                state
-            )}` +
-            `&code_challenge=${encodeURIComponent(
-                codeChallenge
-            )}` +
-            `&code_challenge_method=S256`;
+    `${process.env.SF_LOGIN_URL}/services/oauth2/authorize` +
+    `?response_type=code` +
+    `&client_id=${encodeURIComponent(
+        process.env.SF_CLIENT_ID
+    )}` +
+    `&redirect_uri=${encodeURIComponent(
+        process.env.SF_CALLBACK_URL
+    )}` +
+    `&code_challenge=${encodeURIComponent(
+        codeChallenge
+    )}` +
+    `&code_challenge_method=S256`;
 
 
         console.log(
