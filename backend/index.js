@@ -168,18 +168,19 @@ app.get("/auth/login", (req, res) => {
         .digest("base64url");
 
     const authUrl =
-        `${process.env.SF_LOGIN_URL}/services/oauth2/authorize` +
-        `?response_type=code` +
-        `&client_id=${encodeURIComponent(
-            process.env.SF_CLIENT_ID
-        )}` +
-        `&redirect_uri=${encodeURIComponent(
-            process.env.SF_CALLBACK_URL
-        )}` +
-        `&code_challenge=${encodeURIComponent(
-            codeChallenge
-        )}` +
-        `&code_challenge_method=S256`;
+    `${process.env.SF_LOGIN_URL}/services/oauth2/authorize` +
+    `?response_type=code` +
+    `&prompt=login` +
+    `&client_id=${encodeURIComponent(
+        process.env.SF_CLIENT_ID
+    )}` +
+    `&redirect_uri=${encodeURIComponent(
+        process.env.SF_CALLBACK_URL
+    )}` +
+    `&code_challenge=${encodeURIComponent(
+        codeChallenge
+    )}` +
+    `&code_challenge_method=S256`;
 
     console.log(
         "Opening Salesforce login..."
