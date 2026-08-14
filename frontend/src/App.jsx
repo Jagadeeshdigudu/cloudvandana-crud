@@ -188,7 +188,7 @@ function App() {
 
   const login = () => {
     window.location.href =
-      "http://localhost:5000/auth/login";
+      `${API_URL}/auth/login`;
   };
 
   // ======================================================
