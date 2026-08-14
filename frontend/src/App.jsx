@@ -162,11 +162,12 @@ function App() {
   // ======================================================
   // CHECK LOGIN
   // ======================================================
+  const API_URL = "https://cloudvandana-crud-backend.onrender.com";
 
   const checkLogin = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/status"
+        `${API_URL}/api/status`
       );
 
       const data = await response.json();
@@ -201,7 +202,7 @@ function App() {
       setNextRecordsUrl(null);
 
       const response = await fetch(
-        `http://localhost:5000/api/records?object=${objectName}`
+        `${API_URL}/api/records?object=${objectName}`
       );
 
       const data = await response.json();
@@ -249,7 +250,7 @@ function App() {
       setLoadingMore(true);
 
       const response = await fetch(
-        `http://localhost:5000/api/records?object=${selectedObject}&nextUrl=${encodeURIComponent(
+        `${API_URL}/api/records?object=${selectedObject}&nextUrl=${encodeURIComponent(
           nextRecordsUrl
         )}`
       );
@@ -326,7 +327,7 @@ function App() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/records",
+        `${API_URL}/api/records`,
         {
           method: "POST",
 
@@ -411,7 +412,7 @@ function App() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/records/${selectedObject}/${editingId}`,
+        `${API_URL}/api/records/${selectedObject}/${editingId}`,
         {
           method: "PUT",
 
@@ -471,7 +472,7 @@ function App() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/records/${selectedObject}/${id}`,
+        `${API_URL}/api/records/${selectedObject}/${id}`,
         {
           method: "DELETE"
         }
