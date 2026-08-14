@@ -162,7 +162,7 @@ function App() {
   // ======================================================
   // CHECK LOGIN
   // ======================================================
-  const API_URL = "https://cloudvandana-crud-backend.onrender.com";
+  const API_URL = "http://localhost:5000";
 
   const checkLogin = async () => {
     try {

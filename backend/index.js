@@ -269,9 +269,7 @@ app.get(
             );
 
 
-            res.redirect(
-                "http://localhost:5174/"
-            );
+            res.redirect("http://localhost:5000/");
 
         } catch (error) {
 
