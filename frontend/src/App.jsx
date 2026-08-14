@@ -2,565 +2,1162 @@ import { useEffect, useState } from "react";
 import "./App.css";
 
 // ======================================================
+// API
+// ======================================================
+
+const API_URL =
+  "https://cloudvandana-crud-backend.onrender.com";
+
+
+// ======================================================
+// API FETCH HELPER
+// IMPORTANT: credentials include session cookie
+// ======================================================
+
+const apiFetch = (url, options = {}) => {
+
+  return fetch(url, {
+    ...options,
+    credentials: "include"
+  });
+
+};
+
+
+// ======================================================
 // FORM FIELDS
 // ======================================================
 
 const objectFields = {
+
   Account: [
-    { name: "Name", label: "Account Name", type: "text" },
-    { name: "Phone", label: "Phone", type: "text" },
-    { name: "Website", label: "Website", type: "text" },
-    { name: "Industry", label: "Industry", type: "text" },
-    { name: "Rating", label: "Rating", type: "text" }
+    {
+      name: "Name",
+      label: "Account Name",
+      type: "text"
+    },
+    {
+      name: "Phone",
+      label: "Phone",
+      type: "text"
+    },
+    {
+      name: "Website",
+      label: "Website",
+      type: "text"
+    },
+    {
+      name: "Industry",
+      label: "Industry",
+      type: "text"
+    },
+    {
+      name: "Rating",
+      label: "Rating",
+      type: "text"
+    }
   ],
+
 
   Opportunity: [
-    { name: "Name", label: "Opportunity Name", type: "text" },
-    { name: "Amount", label: "Amount", type: "number" },
-    { name: "StageName", label: "Stage", type: "text" },
-    { name: "CloseDate", label: "Close Date", type: "date" },
-    { name: "Probability", label: "Probability", type: "number" },
-    { name: "Type", label: "Type", type: "text" }
+    {
+      name: "Name",
+      label: "Opportunity Name",
+      type: "text"
+    },
+    {
+      name: "Amount",
+      label: "Amount",
+      type: "number"
+    },
+    {
+      name: "StageName",
+      label: "Stage",
+      type: "text"
+    },
+    {
+      name: "CloseDate",
+      label: "Close Date",
+      type: "date"
+    },
+    {
+      name: "Probability",
+      label: "Probability",
+      type: "number"
+    },
+    {
+      name: "Type",
+      label: "Type",
+      type: "text"
+    }
   ],
+
 
   Lead: [
-    { name: "FirstName", label: "First Name", type: "text" },
-    { name: "LastName", label: "Last Name", type: "text" },
-    { name: "Company", label: "Company", type: "text" },
-    { name: "Email", label: "Email", type: "email" },
-    { name: "Phone", label: "Phone", type: "text" },
-    { name: "Status", label: "Status", type: "text" }
+    {
+      name: "FirstName",
+      label: "First Name",
+      type: "text"
+    },
+    {
+      name: "LastName",
+      label: "Last Name",
+      type: "text"
+    },
+    {
+      name: "Company",
+      label: "Company",
+      type: "text"
+    },
+    {
+      name: "Email",
+      label: "Email",
+      type: "email"
+    },
+    {
+      name: "Phone",
+      label: "Phone",
+      type: "text"
+    },
+    {
+      name: "Status",
+      label: "Status",
+      type: "text"
+    }
   ],
+
 
   Contact: [
-    { name: "FirstName", label: "First Name", type: "text" },
-    { name: "LastName", label: "Last Name", type: "text" },
-    { name: "Email", label: "Email", type: "email" },
-    { name: "Phone", label: "Phone", type: "text" },
-    { name: "Department", label: "Department", type: "text" },
-    { name: "Title", label: "Title", type: "text" }
+    {
+      name: "FirstName",
+      label: "First Name",
+      type: "text"
+    },
+    {
+      name: "LastName",
+      label: "Last Name",
+      type: "text"
+    },
+    {
+      name: "Email",
+      label: "Email",
+      type: "email"
+    },
+    {
+      name: "Phone",
+      label: "Phone",
+      type: "text"
+    },
+    {
+      name: "Department",
+      label: "Department",
+      type: "text"
+    },
+    {
+      name: "Title",
+      label: "Title",
+      type: "text"
+    }
   ],
 
+
   Case: [
-    { name: "Subject", label: "Subject", type: "text" },
-    { name: "Status", label: "Status", type: "text" },
-    { name: "Priority", label: "Priority", type: "text" },
-    { name: "Origin", label: "Origin", type: "text" },
-    { name: "Description", label: "Description", type: "text" }
+    {
+      name: "Subject",
+      label: "Subject",
+      type: "text"
+    },
+    {
+      name: "Status",
+      label: "Status",
+      type: "text"
+    },
+    {
+      name: "Priority",
+      label: "Priority",
+      type: "text"
+    },
+    {
+      name: "Origin",
+      label: "Origin",
+      type: "text"
+    },
+    {
+      name: "Description",
+      label: "Description",
+      type: "text"
+    }
   ]
+
 };
+
 
 // ======================================================
 // TABLE FIELDS
 // ======================================================
 
 const tableFields = {
+
   Account: [
-    { name: "Name", label: "Name" },
-    { name: "Phone", label: "Phone" },
-    { name: "Website", label: "Website" },
-    { name: "Industry", label: "Industry" },
-    { name: "Rating", label: "Rating" }
+    {
+      name: "Name",
+      label: "Name"
+    },
+    {
+      name: "Phone",
+      label: "Phone"
+    },
+    {
+      name: "Website",
+      label: "Website"
+    },
+    {
+      name: "Industry",
+      label: "Industry"
+    },
+    {
+      name: "Rating",
+      label: "Rating"
+    }
   ],
+
 
   Opportunity: [
-    { name: "Name", label: "Name" },
-    { name: "Amount", label: "Amount" },
-    { name: "StageName", label: "Stage" },
-    { name: "CloseDate", label: "Close Date" },
-    { name: "Probability", label: "Probability" },
-    { name: "Type", label: "Type" }
+    {
+      name: "Name",
+      label: "Name"
+    },
+    {
+      name: "Amount",
+      label: "Amount"
+    },
+    {
+      name: "StageName",
+      label: "Stage"
+    },
+    {
+      name: "CloseDate",
+      label: "Close Date"
+    },
+    {
+      name: "Probability",
+      label: "Probability"
+    },
+    {
+      name: "Type",
+      label: "Type"
+    }
   ],
+
 
   Lead: [
-    { name: "FirstName", label: "First Name" },
-    { name: "LastName", label: "Last Name" },
-    { name: "Company", label: "Company" },
-    { name: "Email", label: "Email" },
-    { name: "Phone", label: "Phone" },
-    { name: "Status", label: "Status" }
+    {
+      name: "FirstName",
+      label: "First Name"
+    },
+    {
+      name: "LastName",
+      label: "Last Name"
+    },
+    {
+      name: "Company",
+      label: "Company"
+    },
+    {
+      name: "Email",
+      label: "Email"
+    },
+    {
+      name: "Phone",
+      label: "Phone"
+    },
+    {
+      name: "Status",
+      label: "Status"
+    }
   ],
+
 
   Contact: [
-    { name: "FirstName", label: "First Name" },
-    { name: "LastName", label: "Last Name" },
-    { name: "Email", label: "Email" },
-    { name: "Phone", label: "Phone" },
-    { name: "Department", label: "Department" },
-    { name: "Title", label: "Title" }
+    {
+      name: "FirstName",
+      label: "First Name"
+    },
+    {
+      name: "LastName",
+      label: "Last Name"
+    },
+    {
+      name: "Email",
+      label: "Email"
+    },
+    {
+      name: "Phone",
+      label: "Phone"
+    },
+    {
+      name: "Department",
+      label: "Department"
+    },
+    {
+      name: "Title",
+      label: "Title"
+    }
   ],
 
+
   Case: [
-    { name: "CaseNumber", label: "Case Number" },
-    { name: "Subject", label: "Subject" },
-    { name: "Status", label: "Status" },
-    { name: "Priority", label: "Priority" },
-    { name: "Origin", label: "Origin" },
-    { name: "Description", label: "Description" }
+    {
+      name: "CaseNumber",
+      label: "Case Number"
+    },
+    {
+      name: "Subject",
+      label: "Subject"
+    },
+    {
+      name: "Status",
+      label: "Status"
+    },
+    {
+      name: "Priority",
+      label: "Priority"
+    },
+    {
+      name: "Origin",
+      label: "Origin"
+    },
+    {
+      name: "Description",
+      label: "Description"
+    }
   ]
+
 };
+
 
 // ======================================================
 // REQUIRED FIELDS
 // ======================================================
 
 const requiredFields = {
-  Account: ["Name"],
-  Opportunity: ["Name", "CloseDate"],
-  Lead: ["LastName", "Company"],
-  Contact: ["LastName"],
-  Case: ["Subject"]
+
+  Account: [
+    "Name"
+  ],
+
+  Opportunity: [
+    "Name",
+    "CloseDate"
+  ],
+
+  Lead: [
+    "LastName",
+    "Company"
+  ],
+
+  Contact: [
+    "LastName"
+  ],
+
+  Case: [
+    "Subject"
+  ]
+
 };
+
 
 // ======================================================
 // APP
 // ======================================================
 
 function App() {
-  const [loggedIn, setLoggedIn] = useState(false);
 
-  const [records, setRecords] = useState([]);
+  const [loggedIn, setLoggedIn] =
+    useState(false);
 
-  const [loading, setLoading] = useState(false);
+  const [records, setRecords] =
+    useState([]);
 
-  const [loadingMore, setLoadingMore] = useState(false);
+  const [loading, setLoading] =
+    useState(false);
 
-  const [nextRecordsUrl, setNextRecordsUrl] = useState(null);
+  const [loadingMore, setLoadingMore] =
+    useState(false);
 
-  const [selectedObject, setSelectedObject] = useState("Contact");
+  const [nextRecordsUrl, setNextRecordsUrl] =
+    useState(null);
 
-  const [form, setForm] = useState({});
+  const [selectedObject, setSelectedObject] =
+    useState("Contact");
+
+  const [form, setForm] =
+    useState({});
 
   const [viewingRecord, setViewingRecord] =
-  useState(null);
+    useState(null);
 
-  const [editingId, setEditingId] = useState(null);
+  const [editingId, setEditingId] =
+    useState(null);
+
 
   // ======================================================
   // CREATE EMPTY FORM
   // ======================================================
 
-  const createEmptyForm = (objectName) => {
-    const emptyForm = {};
+  const createEmptyForm =
+    (objectName) => {
 
-    objectFields[objectName].forEach((field) => {
-      emptyForm[field.name] = "";
-    });
+      const emptyForm = {};
 
-    return emptyForm;
-  };
+      objectFields[
+        objectName
+      ].forEach(
+        (field) => {
+
+          emptyForm[
+            field.name
+          ] = "";
+
+        }
+      );
+
+      return emptyForm;
+
+    };
+
 
   // ======================================================
   // CLEAR FORM
   // ======================================================
 
-  const clearForm = (objectName = selectedObject) => {
-    setForm(createEmptyForm(objectName));
-    setEditingId(null);
-  };
+  const clearForm =
+    (
+      objectName = selectedObject
+    ) => {
+
+      setForm(
+        createEmptyForm(
+          objectName
+        )
+      );
+
+      setEditingId(null);
+
+    };
+
 
   // ======================================================
   // CHECK LOGIN
   // ======================================================
-  const API_URL = "https://cloudvandana-crud-backend.onrender.com";
 
-  const checkLogin = async () => {
-    try {
-      const response = await fetch(
-        `${API_URL}/api/status`
-      );
+  const checkLogin =
+    async () => {
 
-      const data = await response.json();
+      try {
 
-      setLoggedIn(data.loggedIn);
+        const response =
+          await apiFetch(
+            `${API_URL}/api/status`
+          );
 
-      if (data.loggedIn) {
-        fetchRecords("Contact");
+
+        const data =
+          await response.json();
+
+
+        setLoggedIn(
+          data.loggedIn
+        );
+
+
+        if (
+          data.loggedIn
+        ) {
+
+          fetchRecords(
+            selectedObject
+          );
+
+        }
+
+      } catch (error) {
+
+        console.error(
+          "Status error:",
+          error
+        );
+
       }
-    } catch (error) {
-      console.error("Status error:", error);
-    }
-  };
+
+    };
+
 
   // ======================================================
   // LOGIN
   // ======================================================
 
   const login = () => {
+
     window.location.href =
       `${API_URL}/auth/login`;
+
   };
+
 
   // ======================================================
   // FETCH RECORDS
   // ======================================================
 
-  const fetchRecords = async (objectName = selectedObject) => {
-    try {
-      setLoading(true);
+  const fetchRecords =
+    async (
+      objectName = selectedObject
+    ) => {
 
-      setNextRecordsUrl(null);
+      try {
 
-      const response = await fetch(
-        `${API_URL}/api/records?object=${objectName}`
-      );
+        setLoading(true);
 
-      const data = await response.json();
+        setNextRecordsUrl(null);
 
-      if (!response.ok) {
-        console.error(data);
 
-        alert(
-          data.message ||
-          `Failed to load ${objectName}`
+        const response =
+          await apiFetch(
+            `${API_URL}/api/records?object=${objectName}`
+          );
+
+
+        const data =
+          await response.json();
+
+
+        if (
+          !response.ok
+        ) {
+
+          console.error(
+            data
+          );
+
+
+          alert(
+            data.message ||
+            `Failed to load ${objectName}`
+          );
+
+
+          setRecords([]);
+
+          return;
+
+        }
+
+
+        setRecords(
+          data.records || []
         );
 
+
+        setNextRecordsUrl(
+          data.nextRecordsUrl ||
+          null
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Fetch records error:",
+          error
+        );
+
+
         setRecords([]);
-        return;
+
+        setNextRecordsUrl(null);
+
+      } finally {
+
+        setLoading(false);
+
       }
 
-      setRecords(data.records || []);
+    };
 
-      setNextRecordsUrl(
-        data.nextRecordsUrl || null
-      );
-
-    } catch (error) {
-      console.error("Fetch records error:", error);
-
-      setRecords([]);
-
-      setNextRecordsUrl(null);
-
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // ======================================================
   // LOAD NEXT 20
   // ======================================================
 
-  const loadMoreRecords = async () => {
-    if (!nextRecordsUrl || loadingMore) {
-      return;
-    }
+  const loadMoreRecords =
+    async () => {
 
-    try {
-      setLoadingMore(true);
+      if (
+        !nextRecordsUrl ||
+        loadingMore
+      ) {
 
-      const response = await fetch(
-        `${API_URL}/api/records?object=${selectedObject}&nextUrl=${encodeURIComponent(
-          nextRecordsUrl
-        )}`
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error("Load more error:", data);
         return;
+
       }
 
-      setRecords((previousRecords) => [
-        ...previousRecords,
-        ...(data.records || [])
-      ]);
 
-      setNextRecordsUrl(
-        data.nextRecordsUrl || null
-      );
+      try {
 
-    } catch (error) {
-      console.error(
-        "Load more records error:",
-        error
-      );
+        setLoadingMore(true);
 
-    } finally {
-      setLoadingMore(false);
-    }
-  };
+
+        const response =
+          await apiFetch(
+
+            `${API_URL}/api/records?object=${selectedObject}&nextUrl=${encodeURIComponent(
+              nextRecordsUrl
+            )}`
+
+          );
+
+
+        const data =
+          await response.json();
+
+
+        if (
+          !response.ok
+        ) {
+
+          console.error(
+            "Load more error:",
+            data
+          );
+
+          return;
+
+        }
+
+
+        setRecords(
+          (previousRecords) => [
+
+            ...previousRecords,
+
+            ...(data.records || [])
+
+          ]
+        );
+
+
+        setNextRecordsUrl(
+          data.nextRecordsUrl ||
+          null
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Load more records error:",
+          error
+        );
+
+      } finally {
+
+        setLoadingMore(false);
+
+      }
+
+    };
+
 
   // ======================================================
   // OBJECT CHANGE
-  // IMPORTANT FIX:
-  // FETCH RECORDS IMMEDIATELY
   // ======================================================
 
-  const handleObjectChange = (e) => {
-    const object = e.target.value;
+  const handleObjectChange =
+    (e) => {
 
-    setSelectedObject(object);
+      const object =
+        e.target.value;
 
-    setRecords([]);
 
-    setNextRecordsUrl(null);
+      setSelectedObject(
+        object
+      );
 
-    setEditingId(null);
+      setRecords([]);
 
-    setForm(createEmptyForm(object));
+      setNextRecordsUrl(null);
 
-    // IMPORTANT
-    fetchRecords(object);
-  };
+      setEditingId(null);
+
+      setForm(
+        createEmptyForm(
+          object
+        )
+      );
+
+
+      fetchRecords(
+        object
+      );
+
+    };
+
 
   // ======================================================
   // INPUT CHANGE
   // ======================================================
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  const handleChange =
+    (e) => {
 
-    setForm((previousForm) => ({
-      ...previousForm,
-      [name]: value
-    }));
-  };
+      const {
+        name,
+        value
+      } = e.target;
+
+
+      setForm(
+        (previousForm) => ({
+
+          ...previousForm,
+
+          [name]:
+            value
+
+        })
+      );
+
+    };
+
 
   // ======================================================
   // CREATE RECORD
   // ======================================================
 
-  const addRecord = async (e) => {
-    e.preventDefault();
+  const addRecord =
+    async (e) => {
 
-    try {
-      const response = await fetch(
-        `${API_URL}/api/records`,
-        {
-          method: "POST",
+      e.preventDefault();
 
-          headers: {
-            "Content-Type": "application/json"
-          },
 
-          body: JSON.stringify({
-            object: selectedObject,
-            record: form
-          })
+      try {
+
+        const response =
+          await apiFetch(
+
+            `${API_URL}/api/records`,
+
+            {
+
+              method:
+                "POST",
+
+              headers: {
+
+                "Content-Type":
+                  "application/json"
+
+              },
+
+              body:
+                JSON.stringify({
+
+                  object:
+                    selectedObject,
+
+                  record:
+                    form
+
+                })
+
+            }
+
+          );
+
+
+        const data =
+          await response.json();
+
+
+        if (
+          !response.ok
+        ) {
+
+          alert(
+            data.message ||
+            "Failed to create record"
+          );
+
+          return;
+
         }
-      );
 
-      const data = await response.json();
 
-      if (!response.ok) {
         alert(
-          data.message ||
-          "Failed to create record"
+          `${selectedObject} added successfully!`
         );
 
-        return;
+
+        clearForm();
+
+
+        await fetchRecords(
+          selectedObject
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Create record error:",
+          error
+        );
+
+
+        alert(
+          "Something went wrong while creating the record."
+        );
+
       }
 
-      alert(
-        `${selectedObject} added successfully!`
+    };
+
+
+  // ======================================================
+  // VIEW RECORD
+  // ======================================================
+
+  const viewRecord =
+    (record) => {
+
+      setViewingRecord(
+        record
       );
 
-      clearForm();
-
-      await fetchRecords(selectedObject);
-
-    } catch (error) {
-      console.error(
-        "Create record error:",
-        error
-      );
-
-      alert(
-        "Something went wrong while creating the record."
-      );
-    }
-  };
-
-  const viewRecord = (record) => {
-  setViewingRecord(record);
-};
-
+    };
 
 
   // ======================================================
   // START EDIT
   // ======================================================
 
-  const startEdit = (record) => {
-    setEditingId(record.Id);
+  const startEdit =
+    (record) => {
 
-    const newForm = {};
+      setEditingId(
+        record.Id
+      );
 
-    objectFields[selectedObject].forEach(
-      (field) => {
-        newForm[field.name] =
-          record[field.name] || "";
-      }
-    );
 
-    setForm(newForm);
+      const newForm = {};
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth"
-    });
-  };
+
+      objectFields[
+        selectedObject
+      ].forEach(
+        (field) => {
+
+          newForm[
+            field.name
+          ] =
+            record[
+              field.name
+            ] || "";
+
+        }
+      );
+
+
+      setForm(
+        newForm
+      );
+
+
+      window.scrollTo({
+
+        top: 0,
+
+        behavior:
+          "smooth"
+
+      });
+
+    };
+
 
   // ======================================================
   // UPDATE RECORD
   // ======================================================
 
-  const updateRecord = async (e) => {
-    e.preventDefault();
+  const updateRecord =
+    async (e) => {
 
-    try {
-      const response = await fetch(
-        `${API_URL}/api/records/${selectedObject}/${editingId}`,
-        {
-          method: "PUT",
+      e.preventDefault();
 
-          headers: {
-            "Content-Type": "application/json"
-          },
 
-          body: JSON.stringify({
-            record: form
-          })
+      try {
+
+        const response =
+          await apiFetch(
+
+            `${API_URL}/api/records/${selectedObject}/${editingId}`,
+
+            {
+
+              method:
+                "PUT",
+
+              headers: {
+
+                "Content-Type":
+                  "application/json"
+
+              },
+
+              body:
+                JSON.stringify({
+
+                  record:
+                    form
+
+                })
+
+            }
+
+          );
+
+
+        const data =
+          await response.json();
+
+
+        if (
+          !response.ok
+        ) {
+
+          alert(
+            data.message ||
+            "Failed to update record"
+          );
+
+          return;
+
         }
-      );
 
-      const data = await response.json();
 
-      if (!response.ok) {
         alert(
-          data.message ||
-          "Failed to update record"
+          `${selectedObject} updated successfully!`
         );
 
-        return;
+
+        clearForm();
+
+
+        await fetchRecords(
+          selectedObject
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Update record error:",
+          error
+        );
+
+
+        alert(
+          "Something went wrong while updating the record."
+        );
+
       }
 
-      alert(
-        `${selectedObject} updated successfully!`
-      );
+    };
 
-      clearForm();
-
-      await fetchRecords(selectedObject);
-
-    } catch (error) {
-      console.error(
-        "Update record error:",
-        error
-      );
-
-      alert(
-        "Something went wrong while updating the record."
-      );
-    }
-  };
 
   // ======================================================
   // DELETE RECORD
   // ======================================================
 
-  const deleteRecord = async (id) => {
-    const confirmDelete = window.confirm(
-      `Are you sure you want to delete this ${selectedObject}?`
-    );
+  const deleteRecord =
+    async (id) => {
 
-    if (!confirmDelete) {
-      return;
-    }
+      const confirmDelete =
+        window.confirm(
 
-    try {
-      const response = await fetch(
-        `${API_URL}/api/records/${selectedObject}/${id}`,
-        {
-          method: "DELETE"
-        }
-      );
+          `Are you sure you want to delete this ${selectedObject}?`
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(
-          data.message ||
-          "Failed to delete record"
         );
 
+
+      if (
+        !confirmDelete
+      ) {
+
         return;
+
       }
 
-      alert(
-        `${selectedObject} deleted successfully!`
-      );
 
-      await fetchRecords(selectedObject);
+      try {
 
-    } catch (error) {
-      console.error(
-        "Delete record error:",
-        error
-      );
+        const response =
+          await apiFetch(
 
-      alert(
-        "Something went wrong while deleting the record."
-      );
-    }
-  };
+            `${API_URL}/api/records/${selectedObject}/${id}`,
+
+            {
+
+              method:
+                "DELETE"
+
+            }
+
+          );
+
+
+        const data =
+          await response.json();
+
+
+        if (
+          !response.ok
+        ) {
+
+          alert(
+            data.message ||
+            "Failed to delete record"
+          );
+
+          return;
+
+        }
+
+
+        alert(
+          `${selectedObject} deleted successfully!`
+        );
+
+
+        await fetchRecords(
+          selectedObject
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Delete record error:",
+          error
+        );
+
+
+        alert(
+          "Something went wrong while deleting the record."
+        );
+
+      }
+
+    };
+
 
   // ======================================================
   // INITIAL FORM
   // ======================================================
 
-  useEffect(() => {
-    setForm(createEmptyForm(selectedObject));
-  }, [selectedObject]);
+  useEffect(
+    () => {
+
+      setForm(
+        createEmptyForm(
+          selectedObject
+        )
+      );
+
+    },
+    [selectedObject]
+  );
+
 
   // ======================================================
   // INITIAL LOGIN CHECK
   // ======================================================
 
-  useEffect(() => {
-    checkLogin();
-  }, []);
+  useEffect(
+    () => {
+
+      checkLogin();
+
+    },
+    []
+  );
+
 
   // ======================================================
   // INFINITE SCROLL
   // ======================================================
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const reachedBottom =
-        window.innerHeight +
-          window.scrollY >=
-        document.documentElement.scrollHeight -
-          250;
+  useEffect(
+    () => {
 
-      if (reachedBottom) {
-        loadMoreRecords();
-      }
-    };
+      const handleScroll =
+        () => {
 
-    window.addEventListener(
-      "scroll",
-      handleScroll
-    );
+          const reachedBottom =
+            window.innerHeight +
+            window.scrollY >=
+            document.documentElement
+              .scrollHeight -
+            250;
 
-    return () => {
-      window.removeEventListener(
+
+          if (
+            reachedBottom
+          ) {
+
+            loadMoreRecords();
+
+          }
+
+        };
+
+
+      window.addEventListener(
         "scroll",
         handleScroll
       );
-    };
-  }, [nextRecordsUrl, loadingMore, selectedObject]);
+
+
+      return () => {
+
+        window.removeEventListener(
+          "scroll",
+          handleScroll
+        );
+
+      };
+
+    },
+    [
+      nextRecordsUrl,
+      loadingMore,
+      selectedObject
+    ]
+  );
+
 
   // ======================================================
   // UI
   // ======================================================
 
   return (
+
     <div className="app">
 
-      <h1>CloudVandana CRUD</h1>
+      <h1>
+        CloudVandana CRUD
+      </h1>
+
 
       {!loggedIn ? (
 
@@ -570,14 +1167,20 @@ function App() {
 
         <div className="login-section">
 
-          <h2>Salesforce Login</h2>
+          <h2>
+            Salesforce Login
+          </h2>
+
 
           <p>
             Please login with Salesforce
             to continue.
           </p>
 
-          <button onClick={login}>
+
+          <button
+            onClick={login}
+          >
             Login with Salesforce
           </button>
 
@@ -591,20 +1194,28 @@ function App() {
 
         <div className="contacts-section">
 
-          <h2>Salesforce Data</h2>
+          <h2>
+            Salesforce Data
+          </h2>
+
 
           {/* OBJECT SELECTOR */}
 
           <div className="object-selector">
 
-            <label htmlFor="salesforce-object">
+            <label
+              htmlFor="salesforce-object"
+            >
               Select Salesforce Object:
             </label>
+
 
             <select
               id="salesforce-object"
               value={selectedObject}
-              onChange={handleObjectChange}
+              onChange={
+                handleObjectChange
+              }
             >
 
               <option value="Account">
@@ -631,13 +1242,13 @@ function App() {
 
           </div>
 
+
           <h3>
             Salesforce {selectedObject}
           </h3>
 
-          {/* ==================================================
-              CREATE / UPDATE FORM
-          ================================================== */}
+
+          {/* CREATE / UPDATE FORM */}
 
           <form
             className="record-form"
@@ -648,7 +1259,9 @@ function App() {
             }
           >
 
-            {objectFields[selectedObject].map(
+            {objectFields[
+              selectedObject
+            ].map(
               (field) => (
 
                 <input
@@ -656,23 +1269,36 @@ function App() {
                   type={field.type}
                   name={field.name}
                   placeholder={field.label}
-                  value={form[field.name] || ""}
-                  onChange={handleChange}
-                  required={requiredFields[
-                    selectedObject
-                  ]?.includes(field.name)}
+                  value={
+                    form[field.name] ||
+                    ""
+                  }
+                  onChange={
+                    handleChange
+                  }
+                  required={
+                    requiredFields[
+                      selectedObject
+                    ]?.includes(
+                      field.name
+                    )
+                  }
                 />
 
               )
             )}
 
-            <button type="submit">
+
+            <button
+              type="submit"
+            >
 
               {editingId
                 ? "Update Record"
                 : "Add Record"}
 
             </button>
+
 
             {editingId && (
 
@@ -683,38 +1309,46 @@ function App() {
                   clearForm()
                 }
               >
+
                 Cancel
+
               </button>
 
             )}
 
           </form>
 
+
           <hr />
 
-          {/* ==================================================
-              RECORD TABLE
-          ================================================== */}
+
+          {/* RECORD TABLE */}
 
           {loading ? (
 
             <p className="status-message">
-              Loading {selectedObject} records...
+
+              Loading {selectedObject}
+              records...
+
             </p>
 
           ) : records.length === 0 ? (
 
             <p className="status-message">
-              No {selectedObject} records found.
+
+              No {selectedObject}
+              records found.
+
             </p>
 
           ) : (
 
             <>
 
-              {/* RESPONSIVE TABLE WRAPPER */}
-
-              <div className="table-wrapper">
+              <div
+                className="table-wrapper"
+              >
 
                 <table>
 
@@ -724,23 +1358,31 @@ function App() {
 
                       {tableFields[
                         selectedObject
-                      ].map((field) => (
+                      ].map(
+                        (field) => (
 
-                        <th
-                          key={field.name}
-                        >
-                          {field.label}
-                        </th>
+                          <th
+                            key={field.name}
+                          >
 
-                      ))}
+                            {field.label}
 
-                      <th className="action-column">
+                          </th>
+
+                        )
+                      )}
+
+
+                      <th
+                        className="action-column"
+                      >
                         Action
                       </th>
 
                     </tr>
 
                   </thead>
+
 
                   <tbody>
 
@@ -753,34 +1395,52 @@ function App() {
 
                           {tableFields[
                             selectedObject
-                          ].map((field) => (
+                          ].map(
+                            (field) => (
 
-                            <td
-                              key={field.name}
-                              title={
-                                record[field.name] || "-"
-                              }
+                              <td
+                                key={
+                                  field.name
+                                }
+                                title={
+                                  record[
+                                    field.name
+                                  ] || "-"
+                                }
+                              >
+
+                                {
+                                  record[
+                                    field.name
+                                  ] || "-"
+                                }
+
+                              </td>
+
+                            )
+                          )}
+
+
+                          <td
+                            className="action-column"
+                          >
+
+                            <div
+                              className="action-buttons"
                             >
 
-                              {record[field.name] || "-"}
-
-                            </td>
-
-                          ))}
-
-                          <td className="action-column">
-
-                            <div className="action-buttons">
-
-
-                               <button
+                              <button
                                 type="button"
                                 className="view-btn"
                                 onClick={() =>
-                                  viewRecord(record)
+                                  viewRecord(
+                                    record
+                                  )
                                 }
                               >
+
                                 View
+
                               </button>
 
 
@@ -788,11 +1448,16 @@ function App() {
                                 type="button"
                                 className="edit-btn"
                                 onClick={() =>
-                                  startEdit(record)
+                                  startEdit(
+                                    record
+                                  )
                                 }
                               >
+
                                 Edit
+
                               </button>
+
 
                               <button
                                 type="button"
@@ -803,7 +1468,9 @@ function App() {
                                   )
                                 }
                               >
+
                                 Delete
+
                               </button>
 
                             </div>
@@ -821,19 +1488,29 @@ function App() {
 
               </div>
 
+
               {loadingMore && (
 
-                <p className="loading-more">
+                <p
+                  className="loading-more"
+                >
+
                   Loading more records...
+
                 </p>
 
               )}
 
+
               {!nextRecordsUrl &&
                 records.length > 0 && (
 
-                  <p className="end-message">
+                  <p
+                    className="end-message"
+                  >
+
                     All records loaded.
+
                   </p>
 
                 )}
@@ -847,70 +1524,81 @@ function App() {
       )}
 
 
+      {/* ==================================================
+          VIEW RECORD MODAL
+      ================================================== */}
+
       {viewingRecord && (
 
-  <div
-    className="view-modal-overlay"
-    onClick={() =>
-      setViewingRecord(null)
-    }
-  >
-
-    <div
-      className="view-modal"
-      onClick={(e) =>
-        e.stopPropagation()
-      }
-    >
-
-      <h2>
-        {selectedObject} Details
-      </h2>
-
-      <div className="view-details">
-
-        {tableFields[
-          selectedObject
-        ].map((field) => (
+        <div
+          className="modal-overlay"
+          onClick={() =>
+            setViewingRecord(null)
+          }
+        >
 
           <div
-            className="view-detail-row"
-            key={field.name}
+            className="modal-content"
+            onClick={(e) =>
+              e.stopPropagation()
+            }
           >
 
-            <strong>
-              {field.label}
-            </strong>
+            <h2>
+              View {selectedObject}
+            </h2>
 
-            <span>
-              {viewingRecord[
-                field.name
-              ] || "-"}
-            </span>
+
+            {tableFields[
+              selectedObject
+            ].map(
+              (field) => (
+
+                <div
+                  className="view-field"
+                  key={field.name}
+                >
+
+                  <strong>
+                    {field.label}:
+                  </strong>
+
+
+                  <span>
+                    {
+                      viewingRecord[
+                        field.name
+                      ] || "-"
+                    }
+                  </span>
+
+                </div>
+
+              )
+            )}
+
+
+            <button
+              type="button"
+              onClick={() =>
+                setViewingRecord(null)
+              }
+            >
+
+              Close
+
+            </button>
 
           </div>
 
-        ))}
+        </div>
 
-      </div>
-
-      <button
-        className="close-view-btn"
-        onClick={() =>
-          setViewingRecord(null)
-        }
-      >
-        Close
-      </button>
+      )}
 
     </div>
 
-  </div>
-
-)}
-
-    </div>
   );
+
 }
 
 export default App;

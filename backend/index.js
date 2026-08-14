@@ -4,16 +4,78 @@ const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
 const crypto = require("crypto");
+const session = require("express-session");
 
 const app = express();
 
-let codeVerifier;
-let accessToken;
-let instanceUrl;
+const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+// ======================================================
+// ALLOWED FRONTEND ORIGINS
+// ======================================================
+
+const allowedOrigins = [
+    "https://cloudvandana-crud-frontend.onrender.com"
+];
+
+// ======================================================
+// MIDDLEWARE
+// ======================================================
+
+app.set("trust proxy", 1);
+
+app.use(
+    cors({
+        origin: function (origin, callback) {
+
+            // Allow requests without an Origin
+            // such as Postman/server-to-server requests
+            if (!origin) {
+                return callback(null, true);
+            }
+
+            if (allowedOrigins.includes(origin)) {
+                return callback(null, true);
+            }
+
+            return callback(
+                new Error("CORS: Origin not allowed")
+            );
+        },
+
+        credentials: true
+    })
+);
+
 app.use(express.json());
 
+// ======================================================
+// SESSION
+// ======================================================
+
+app.use(
+    session({
+        secret:
+            process.env.SESSION_SECRET ||
+            "development-only-change-this-secret",
+
+        resave: false,
+
+        saveUninitialized: false,
+
+        cookie: {
+            httpOnly: true,
+
+            secure:
+                process.env.NODE_ENV === "production",
+
+            sameSite: "lax",
+
+            maxAge:
+                24 * 60 * 60 * 1000
+        }
+    })
+);
 
 // ======================================================
 // SALESFORCE OBJECT CONFIGURATION
@@ -22,7 +84,7 @@ app.use(express.json());
 const objectConfig = {
 
     Account: {
-        // 5 fields displayed in table
+
         fields: [
             "Id",
             "Name",
@@ -32,7 +94,6 @@ const objectConfig = {
             "Rating"
         ],
 
-        // Fields user can enter
         createFields: [
             "Name",
             "Phone",
@@ -44,7 +105,7 @@ const objectConfig = {
 
 
     Opportunity: {
-        // 6 fields displayed in table
+
         fields: [
             "Id",
             "Name",
@@ -55,19 +116,19 @@ const objectConfig = {
             "Type"
         ],
 
-        // Fields user can enter
         createFields: [
             "Name",
             "Amount",
             "StageName",
             "CloseDate",
+            "Probability",
             "Type"
         ]
     },
 
 
     Lead: {
-        // 6 fields displayed in table
+
         fields: [
             "Id",
             "FirstName",
@@ -90,7 +151,7 @@ const objectConfig = {
 
 
     Contact: {
-        // 6 fields displayed in table
+
         fields: [
             "Id",
             "FirstName",
@@ -113,7 +174,7 @@ const objectConfig = {
 
 
     Case: {
-        // 6 fields displayed in table
+
         fields: [
             "Id",
             "CaseNumber",
@@ -133,7 +194,6 @@ const objectConfig = {
         ]
     }
 };
-
 
 const allowedObjects =
     Object.keys(objectConfig);
@@ -158,35 +218,86 @@ app.get("/", (req, res) => {
 
 app.get("/auth/login", (req, res) => {
 
-    codeVerifier = crypto
-        .randomBytes(64)
-        .toString("base64url");
+    try {
 
-    const codeChallenge = crypto
-        .createHash("sha256")
-        .update(codeVerifier)
-        .digest("base64url");
+        // ----------------------------------------------
+        // Generate PKCE verifier for THIS SESSION
+        // ----------------------------------------------
 
-    const authUrl =
-    `${process.env.SF_LOGIN_URL}/services/oauth2/authorize` +
-    `?response_type=code` +
-    `&prompt=login` +
-    `&client_id=${encodeURIComponent(
-        process.env.SF_CLIENT_ID
-    )}` +
-    `&redirect_uri=${encodeURIComponent(
-        process.env.SF_CALLBACK_URL
-    )}` +
-    `&code_challenge=${encodeURIComponent(
-        codeChallenge
-    )}` +
-    `&code_challenge_method=S256`;
+        const codeVerifier =
+            crypto
+                .randomBytes(64)
+                .toString("base64url");
 
-    console.log(
-        "Opening Salesforce login..."
-    );
+        const codeChallenge =
+            crypto
+                .createHash("sha256")
+                .update(codeVerifier)
+                .digest("base64url");
 
-    res.redirect(authUrl);
+
+        // ----------------------------------------------
+        // Generate OAuth state for THIS SESSION
+        // ----------------------------------------------
+
+        const state =
+            crypto
+                .randomBytes(32)
+                .toString("hex");
+
+
+        // ----------------------------------------------
+        // Store OAuth information in user's session
+        // ----------------------------------------------
+
+        req.session.codeVerifier =
+            codeVerifier;
+
+        req.session.oauthState =
+            state;
+
+
+        // ----------------------------------------------
+        // Salesforce authorization URL
+        // ----------------------------------------------
+
+        const authUrl =
+            `${process.env.SF_LOGIN_URL}/services/oauth2/authorize` +
+            `?response_type=code` +
+            `&prompt=login` +
+            `&client_id=${encodeURIComponent(
+                process.env.SF_CLIENT_ID
+            )}` +
+            `&redirect_uri=${encodeURIComponent(
+                process.env.SF_CALLBACK_URL
+            )}` +
+            `&state=${encodeURIComponent(
+                state
+            )}` +
+            `&code_challenge=${encodeURIComponent(
+                codeChallenge
+            )}` +
+            `&code_challenge_method=S256`;
+
+
+        console.log(
+            "Opening Salesforce login..."
+        );
+
+        res.redirect(authUrl);
+
+    } catch (error) {
+
+        console.error(
+            "Login URL generation error:",
+            error
+        );
+
+        res.status(500).json({
+            message:
+                "Unable to start Salesforce login"
+        });
+    }
 });
 
 
@@ -198,18 +309,97 @@ app.get(
     "/auth/callback",
     async (req, res) => {
 
-        const { code } = req.query;
+        const {
+            code,
+            state,
+            error,
+            error_description
+        } = req.query;
+
+
+        console.log(
+            "OAuth callback query:",
+            req.query
+        );
+
+
+        // ----------------------------------------------
+        // Salesforce returned an OAuth error
+        // ----------------------------------------------
+
+        if (error) {
+
+            return res.status(400).json({
+
+                message:
+                    "Salesforce OAuth authorization failed",
+
+                error:
+                    error,
+
+                error_description:
+                    error_description
+            });
+        }
+
+
+        // ----------------------------------------------
+        // Authorization code check
+        // ----------------------------------------------
 
         if (!code) {
 
-            return res
-                .status(400)
-                .send(
-                    "Authorization code not received"
-                );
+            return res.status(400).json({
+
+                message:
+                    "Authorization code not received",
+
+                callbackQuery:
+                    req.query
+            });
         }
 
+
+        // ----------------------------------------------
+        // State validation
+        // ----------------------------------------------
+
+        if (
+            !state ||
+            state !== req.session.oauthState
+        ) {
+
+            return res.status(400).json({
+
+                message:
+                    "Invalid OAuth state"
+            });
+        }
+
+
+        // ----------------------------------------------
+        // Get PKCE verifier from THIS user's session
+        // ----------------------------------------------
+
+        const codeVerifier =
+            req.session.codeVerifier;
+
+
+        if (!codeVerifier) {
+
+            return res.status(400).json({
+
+                message:
+                    "PKCE code verifier not found"
+            });
+        }
+
+
         try {
+
+            // ------------------------------------------
+            // Exchange authorization code for token
+            // ------------------------------------------
 
             const response =
                 await axios.post(
@@ -221,7 +411,8 @@ app.get(
                         grant_type:
                             "authorization_code",
 
-                        code: code,
+                        code:
+                            code,
 
                         client_id:
                             process.env.SF_CLIENT_ID,
@@ -246,13 +437,34 @@ app.get(
                 );
 
 
-            accessToken =
+            // ------------------------------------------
+            // Store Salesforce information
+            // in THIS user's session
+            // ------------------------------------------
+
+            req.session.accessToken =
                 response.data.access_token;
 
-            instanceUrl =
+            req.session.instanceUrl =
                 response.data.instance_url;
 
-            codeVerifier = null;
+
+            if (
+                response.data.refresh_token
+            ) {
+
+                req.session.refreshToken =
+                    response.data.refresh_token;
+            }
+
+
+            // ------------------------------------------
+            // Remove temporary OAuth information
+            // ------------------------------------------
+
+            delete req.session.codeVerifier;
+
+            delete req.session.oauthState;
 
 
             console.log(
@@ -261,24 +473,62 @@ app.get(
 
             console.log(
                 "Instance URL:",
-                instanceUrl
+                req.session.instanceUrl
             );
 
             console.log(
                 "Access Token received:",
-                !!accessToken
+                !!req.session.accessToken
             );
 
 
-           res.redirect("https://cloudvandana-crud-frontend.onrender.com/");
+            // ------------------------------------------
+            // Save session before redirect
+            // ------------------------------------------
+
+            req.session.save((err) => {
+
+                if (err) {
+
+                    console.error(
+                        "Session save error:",
+                        err
+                    );
+
+                    return res.status(500).json({
+
+                        message:
+                            "Failed to save login session"
+
+                    });
+                }
+
+                
+                const frontendUrl =
+                    process.env.FRONTEND_URL;
+                    if (!frontendUrl) {
+                        return res.status(500).json({
+                            message: "Frontend URL not configured"
+                        });
+                    }
+
+                res.redirect(
+                    frontendUrl
+                );
+
+            });
 
         } catch (error) {
 
             console.error(
+
                 "Salesforce OAuth Error:",
+
                 error.response?.data ||
                 error.message
+
             );
+
 
             res.status(500).json({
 
@@ -306,10 +556,11 @@ app.get(
         res.json({
 
             loggedIn:
-                !!accessToken,
+                !!req.session.accessToken,
 
             instance_url:
-                instanceUrl || null
+                req.session.instanceUrl ||
+                null
 
         });
 
@@ -327,8 +578,8 @@ app.get(
     async (req, res) => {
 
         if (
-            !accessToken ||
-            !instanceUrl
+            !req.session.accessToken ||
+            !req.session.instanceUrl
         ) {
 
             return res.status(401).json({
@@ -350,9 +601,7 @@ app.get(
 
 
         if (
-            !allowedObjects.includes(
-                object
-            )
+            !allowedObjects.includes(object)
         ) {
 
             return res.status(400).json({
@@ -395,14 +644,14 @@ app.get(
                 response =
                     await axios.get(
 
-                        `${instanceUrl}${nextUrl}`,
+                        `${req.session.instanceUrl}${nextUrl}`,
 
                         {
 
                             headers: {
 
                                 Authorization:
-                                    `Bearer ${accessToken}`
+                                    `Bearer ${req.session.accessToken}`
 
                             }
 
@@ -441,7 +690,7 @@ app.get(
                 response =
                     await axios.get(
 
-                        `${instanceUrl}/services/data/v65.0/query`,
+                        `${req.session.instanceUrl}/services/data/v65.0/query`,
 
                         {
 
@@ -452,8 +701,8 @@ app.get(
                             headers: {
 
                                 Authorization:
-                                    `Bearer ${accessToken}`,
-                                
+                                    `Bearer ${req.session.accessToken}`,
+
                                 "Sforce-Query-Options":
                                     "batchSize=20"
 
@@ -520,8 +769,8 @@ app.post(
     async (req, res) => {
 
         if (
-            !accessToken ||
-            !instanceUrl
+            !req.session.accessToken ||
+            !req.session.instanceUrl
         ) {
 
             return res.status(401).json({
@@ -541,9 +790,7 @@ app.post(
 
 
         if (
-            !allowedObjects.includes(
-                object
-            )
+            !allowedObjects.includes(object)
         ) {
 
             return res.status(400).json({
@@ -740,7 +987,7 @@ app.post(
             const response =
                 await axios.post(
 
-                    `${instanceUrl}/services/data/v65.0/sobjects/${object}`,
+                    `${req.session.instanceUrl}/services/data/v65.0/sobjects/${object}`,
 
                     salesforceRecord,
 
@@ -749,7 +996,7 @@ app.post(
                         headers: {
 
                             Authorization:
-                                `Bearer ${accessToken}`,
+                                `Bearer ${req.session.accessToken}`,
 
                             "Content-Type":
                                 "application/json"
@@ -815,8 +1062,8 @@ app.put(
     async (req, res) => {
 
         if (
-            !accessToken ||
-            !instanceUrl
+            !req.session.accessToken ||
+            !req.session.instanceUrl
         ) {
 
             return res.status(401).json({
@@ -840,15 +1087,28 @@ app.put(
 
 
         if (
-            !allowedObjects.includes(
-                object
-            )
+            !allowedObjects.includes(object)
         ) {
 
             return res.status(400).json({
 
                 message:
                     "Invalid Salesforce object"
+
+            });
+
+        }
+
+
+        if (
+            !record ||
+            typeof record !== "object"
+        ) {
+
+            return res.status(400).json({
+
+                message:
+                    "Record data is required"
 
             });
 
@@ -885,7 +1145,7 @@ app.put(
 
             await axios.patch(
 
-                `${instanceUrl}/services/data/v65.0/sobjects/${object}/${id}`,
+                `${req.session.instanceUrl}/services/data/v65.0/sobjects/${object}/${id}`,
 
                 salesforceRecord,
 
@@ -894,7 +1154,7 @@ app.put(
                     headers: {
 
                         Authorization:
-                            `Bearer ${accessToken}`,
+                            `Bearer ${req.session.accessToken}`,
 
                         "Content-Type":
                             "application/json"
@@ -957,8 +1217,8 @@ app.delete(
     async (req, res) => {
 
         if (
-            !accessToken ||
-            !instanceUrl
+            !req.session.accessToken ||
+            !req.session.instanceUrl
         ) {
 
             return res.status(401).json({
@@ -978,9 +1238,7 @@ app.delete(
 
 
         if (
-            !allowedObjects.includes(
-                object
-            )
+            !allowedObjects.includes(object)
         ) {
 
             return res.status(400).json({
@@ -997,14 +1255,14 @@ app.delete(
 
             await axios.delete(
 
-                `${instanceUrl}/services/data/v65.0/sobjects/${object}/${id}`,
+                `${req.session.instanceUrl}/services/data/v65.0/sobjects/${object}/${id}`,
 
                 {
 
                     headers: {
 
                         Authorization:
-                            `Bearer ${accessToken}`
+                            `Bearer ${req.session.accessToken}`
 
                     }
 
@@ -1060,14 +1318,13 @@ app.delete(
 // START SERVER
 // ======================================================
 
-const PORT = process.env.PORT || 5000;
-
 app.listen(
-  PORT,
-  "0.0.0.0",
-  () => {
-    console.log(
-      `Server running on port ${PORT}`
-    );
-  }
+    PORT,
+    () => {
+
+        console.log(
+            `Backend server running on port ${PORT}`
+        );
+
+    }
 );
